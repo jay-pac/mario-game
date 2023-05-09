@@ -30,10 +30,10 @@ scene('game', () => {
     '                                  ',
     '                                  ',
     '          %    ==*=               ',
+    '                                  ',
     '                       -+         ',
-    '                       ()         ',
-    '         m        ^ ^             ',
-    '==========================  ======',
+    '         m        ^ ^  ()         ',
+    '=========================   ======',
   ];
 
   const levelCfg = {
@@ -41,17 +41,24 @@ scene('game', () => {
     height: 20,
     '=': [sprite('brick'), solid()],
     '$': [sprite('coin')],
+    '#': [sprite('mushroom')],
     '%': [sprite('surprise'), solid(), 'coin-surprise'],
     '*': [sprite('surprise'), solid(), 'mushroom-surprise'],
-    '(': [sprite('pipe-bottom-left'), solid()],
-    ')': [sprite('pipe-bottom-right'), solid()],
-    '-': [sprite('pipe-top-left'), solid()],
-    '+': [sprite('pipe-top-right'), solid()],
+    '(': [sprite('pipe-bottom-left'), solid(), scale(0.5)],
+    ')': [sprite('pipe-bottom-right'), solid(), scale(0.5)],
+    '-': [sprite('pipe-top-left'), solid(), scale(0.5)],
+    '+': [sprite('pipe-top-right'), solid(), scale(0.5)],
     '^': [sprite('evil-shroom'), solid()],
-    'm': [sprite('mario'), solid()]
   };
 
   const gameLevel = addLevel(maps, levelCfg);
+
+  const player = add([
+    sprite('mario'), solid(),
+    pos(30, 0),
+    body(),
+    origin('bot'),
+  ]);
 });
 
 start('game');
