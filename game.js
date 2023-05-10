@@ -33,10 +33,10 @@ scene('game', () => {
     '                                  ',
     '                                  ',
     '                                  ',
-    '          %    ==*=               ',
+    '          %==*=                   ',
     '                                  ',
     '                       -+         ',
-    '         m        ^ ^  ()         ',
+    '                  ^ ^  ()         ',
     '=========================   ======',
   ];
 
@@ -44,10 +44,11 @@ scene('game', () => {
     width: 20,
     height: 20,
     '=': [sprite('brick'), solid()],
-    '$': [sprite('coin')],
-    '#': [sprite('mushroom')],
+    '$': [sprite('coin'), 'coin'],
+    '#': [sprite('mushroom'), 'mushroom', solid(), body()],
     '%': [sprite('surprise'), solid(), 'coin-surprise'],
     '*': [sprite('surprise'), solid(), 'mushroom-surprise'],
+    '}': [sprite('unboxed'), solid(),],
     '(': [sprite('pipe-bottom-left'), solid(), scale(0.5)],
     ')': [sprite('pipe-bottom-right'), solid(), scale(0.5)],
     '-': [sprite('pipe-top-left'), solid(), scale(0.5)],
@@ -57,7 +58,7 @@ scene('game', () => {
 
   const gameLevel = addLevel(maps, levelCfg);
 
-  const scoreLable = add ([
+  const scoreLabel = add ([
     text('test'),
     pos(30, 6),
     layer('ui'),
@@ -66,17 +67,74 @@ scene('game', () => {
     }
   ])
 
-  const levelLable = add([text('level ' + 'test', pos(4, 6))])
+  add([text('level ' + 'test', pos(4, 6))])
+
+  function big () {
+    let timer = 0
+    let isBig = false
+    return {
+        update() {
+            if(isBig) {
+                // dt is a kaboom method - delta time since last frame
+                timer -= dt()
+                if (timer <= 0){
+                    this.smallify()
+                }
+            }
+        },
+        isBig() {
+            return isBig
+        },
+        smallify() {
+            this.scale = vec2(1)
+            timer = 0
+            isBig = false
+
+        },
+        biggify(time) {
+            this.scale = vec2(2)
+            timer = time
+            isBig = true
+        }
+        }
+    }
 
   const player = add([
     sprite('mario'), solid(),
     pos(30, 0),
     body(),
+    big(),
     origin('bot'),
   ]);
 
-  // adding event listeners to move the player around the level using Kaboom methods
-  
+  action('mushroom', (m) => {
+    m.move(10, 0)
+  })
+
+  player.on('headbump', (obj) => {
+    if(obj.is('coin-surprise')){
+        gameLevel.spawn('$', obj.gridPos.sub(0, 1))
+        destroy(obj)
+        gameLevel.spawn('}', obj.gridPos.sub(0, 0))
+    }
+    if (obj.is('mushroom-surprise')){
+        gameLevel.spawn('#', obj.gridPos.sub(0, 1))
+        gameLevel.spawn('}', obj.gridPos.sub(0, 0))
+    }
+  })
+
+  player.collides('mushroom', (m) => {
+    destroy(m)
+    player.biggify(6)
+  })
+
+  player.collides('coin', (c) => {
+    destroy(c)
+    scoreLabel.value++
+    scoreLabel.text = scoreLabel.value
+  })
+
+  // adding event listeners to move the player around the level using Kaboom method
   keyDown('left', () => {
     player.move(-MOVE_SPEED, 0)
   });
